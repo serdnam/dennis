@@ -1,32 +1,40 @@
+import { decode } from "../utils/decode.ts";
 import { decodeUint8ArrayArray } from "../utils/decodeUint8ArrayArray.ts";
+import { encode } from "../utils/encode.ts";
 import { getAllCommands } from "../utils/getAllCommands.ts";
 
-import { Command, CommandDoc } from "./command.interface.ts";
+import { ArgumentDoc, Command, CommandDoc } from "./command.interface.ts";
 
 const textDecoder = new TextDecoder();
-const textEncoder = new TextEncoder();
+
+function mapArguments(args: ReadonlyArray<Readonly<ArgumentDoc>>) {
+  return args.map((arg) => {
+    return [
+      encode("name"),
+      encode(arg.name),
+      encode("type"),
+      encode(arg.type),
+      ...(arg.key_spec_index !== undefined
+        ? [encode("key_spec_index"), arg.key_spec_index]
+        : []),
+      ...(arg.flags ? [encode("flags"), arg.flags] : []),
+    ];
+  });
+}
 
 function mapSubcommands(subcommands: CommandDoc["subcommands"]) {
   return subcommands?.flatMap(([name, subc]) => {
-    return [textEncoder.encode(name), [
-      textEncoder.encode("summary"),
-      textEncoder.encode(subc.summary),
-      textEncoder.encode("since"),
-      textEncoder.encode(subc.since),
-      textEncoder.encode("group"),
-      textEncoder.encode(subc.group),
-      textEncoder.encode("complexity"),
-      textEncoder.encode(subc.complexity),
-      textEncoder.encode("arguments"),
-      subc.arguments.map((arg) => {
-        return [
-          textEncoder.encode("name"),
-          textEncoder.encode(arg.name),
-          textEncoder.encode("type"),
-          textEncoder.encode(arg.type),
-          ...(arg.flags ? [textEncoder.encode("flags"), arg.flags] : []),
-        ];
-      }),
+    return [encode(name), [
+      encode("summary"),
+      encode(subc.summary),
+      encode("since"),
+      encode(subc.since),
+      encode("group"),
+      encode(subc.group),
+      encode("complexity"),
+      encode(subc.complexity),
+      encode("arguments"),
+      mapArguments(subc.arguments),
     ]];
   });
 }
@@ -57,7 +65,7 @@ class COMMANDClass implements Command {
 
   // deno-lint-ignore require-await
   async execute(args: Uint8Array[], db: any) {
-    const subcommand = textDecoder.decode(args[0]);
+    const subcommand = decode(args[0]);
     switch (subcommand) {
       case "DOCS": {
         const commandList = decodeUint8ArrayArray(args.slice(1)).map((c) =>
@@ -72,18 +80,24 @@ class COMMANDClass implements Command {
 
         return commandDocs.flatMap(([name, command]) => {
           const doc = command.docs;
-          return [textEncoder.encode(name), [
-            textEncoder.encode("summary"),
-            textEncoder.encode(doc.summary),
-            textEncoder.encode("since"),
-            textEncoder.encode(doc.since),
-            textEncoder.encode("group"),
-            textEncoder.encode(doc.group),
-            textEncoder.encode("complexity"),
-            textEncoder.encode(doc.complexity),
+          return [encode(name), [
+            encode("summary"),
+            encode(doc.summary),
+            encode("since"),
+            encode(doc.since),
+            encode("group"),
+            encode(doc.group),
+            encode("complexity"),
+            encode(doc.complexity),
+            ...(doc.arguments
+              ? [
+                encode("arguments"),
+                mapArguments(doc.arguments),
+              ]
+              : []),
             ...(doc.subcommands
               ? [
-                textEncoder.encode("subcommands"),
+                encode("subcommands"),
                 mapSubcommands(doc.subcommands),
               ]
               : []),

@@ -95,7 +95,7 @@ export async function handle(conn: Deno.Conn, db: any) {
               status = "parsing_bulkstring";
             }
           } else {
-            throw new Error('Error parsing request')
+            throw new Error("Error parsing request");
           }
           if (buffer.length > 0) {
             keepParsing = true;

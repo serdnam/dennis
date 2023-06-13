@@ -1,4 +1,4 @@
-type ArgumentDoc = {
+export type ArgumentDoc = {
   name: string;
   type: string;
   key_spec_index?: number;
@@ -22,6 +22,7 @@ export type CommandDoc = {
   deprecated_since?: string;
   history?: ReadonlyArray<[string, string]>;
   subcommands?: ReadonlyArray<Readonly<[string, Readonly<SubcommandDoc>]>>;
+  arguments?: ReadonlyArray<Readonly<ArgumentDoc>>;
 };
 
 export interface Command {

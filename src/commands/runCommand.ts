@@ -1,9 +1,8 @@
+import { decode } from "../utils/decode.ts";
 import { commands } from "./allCommands.ts";
 
-const textDecoder = new TextDecoder();
-
 export async function runCommand(args: Uint8Array[], db: any) {
-  const commandName = textDecoder.decode(args[0]).toLowerCase();
+  const commandName = decode(args[0]).toLowerCase();
   const command = commands.get(commandName);
   if (!command) {
     throw new Error(`Unknown command: ${commandName}`);

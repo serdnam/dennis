@@ -15,7 +15,7 @@ class GETCommand implements Command {
 
   async execute(args: Uint8Array[], db: any) {
     const key = args[0];
-    return (await db.get([key])).value;
+    return (await db.get([key])).value || null;
   }
 }
 
