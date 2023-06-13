@@ -1,4 +1,29 @@
+type ArgumentDoc = {
+  name: string;
+  type: string;
+  flags: ReadonlyArray<string>;
+};
+
+type SubcommandDoc = {
+  summary: string;
+  since: string;
+  group: string;
+  complexity: string;
+  arguments: ReadonlyArray<Readonly<ArgumentDoc>>;
+};
+
+export type CommandDoc = {
+  summary: string;
+  since: string;
+  complexity: string;
+  group: string;
+  doc_flags?: string[];
+  deprecated_since?: string;
+  history?: ReadonlyArray<[string, string]>;
+  subcommands: ReadonlyArray<Readonly<[string, Readonly<SubcommandDoc>]>>;
+};
+
 export interface Command {
-  docs: any[];
-  execute: (command: string[], db: any) => Promise<any>;
+  docs: Readonly<CommandDoc>;
+  execute: (command: Uint8Array[], db: any) => Promise<any>;
 }

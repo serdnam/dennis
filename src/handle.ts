@@ -1,7 +1,5 @@
 import { runCommand } from "./commands/runCommand.ts";
-import { _, TextDelimiterStream } from "./deps.ts";
-
-const NEWLINE = "\r\n";
+import { respond } from "./io/respond.ts";
 
 const CARRIAGE_RETURN = 13; // '\r'
 const ARRAY_INDICATOR = 42; // '*'
@@ -78,27 +76,27 @@ export async function handle(conn: Deno.Conn, db: any) {
             status = "parsing";
           }
           if (buffer.length > 0) {
-            keepParsing = true
+            keepParsing = true;
           }
           break;
         }
         case "parsing": {
           if (currentArrayIndex === arrayLength) {
-            reply = true
+            reply = true;
             status = "reply";
             break;
           }
           if (buffer[0] === BULK_STRING_INDICATOR) {
             status = "parsing_bulkstringlength";
-            buffer = buffer.slice(1)
+            buffer = buffer.slice(1);
             const finished = parseBulkStringLength(buffer);
             if (finished) {
-                parts.push(new Uint8Array(bulkStringLength));
+              parts.push(new Uint8Array(bulkStringLength));
               status = "parsing_bulkstring";
             }
           }
           if (buffer.length > 0) {
-            keepParsing = true
+            keepParsing = true;
           }
           break;
         }
@@ -109,7 +107,7 @@ export async function handle(conn: Deno.Conn, db: any) {
             status = "parsing_bulkstring";
           }
           if (buffer.length > 0) {
-            keepParsing = true
+            keepParsing = true;
           }
           break;
         }
@@ -124,35 +122,36 @@ export async function handle(conn: Deno.Conn, db: any) {
               bulkStringLength - currentBulkStringIndex,
             );
             bulkString.set(remainingString, currentBulkStringIndex);
-            buffer = buffer.slice(bulkStringLength - currentBulkStringIndex + 2);
+            buffer = buffer.slice(
+              bulkStringLength - currentBulkStringIndex + 2,
+            );
             currentBulkStringIndex = 0;
             bulkStringLength = 0;
             if (currentArrayIndex < arrayLength) {
               currentArrayIndex++;
-              status = 'parsing'
-              keepParsing = true
+              status = "parsing";
+              keepParsing = true;
               break;
             }
           }
           if (buffer.length > 0) {
-            keepParsing = true
+            keepParsing = true;
           }
           break;
         }
         case "reply": {
           // Execute the command
-          // await runCommand(command, db);
-
+          const result = await runCommand(parts, db);
+          respond(result, conn);
           // Reset for the next command
           status = "waiting";
           parts = [];
           arrayLength = 0;
           currentArrayIndex = 0;
-          reply = false
+          reply = false;
           break;
         }
       }
     }
   }
-  conn.close();
 }
