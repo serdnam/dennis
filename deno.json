@@ -5,8 +5,7 @@
     "strict": true
   },
   "imports": {
-    "std/": "https://deno.land/std@0.191.0/",
-    "lodash": "npm:lodash@^4.17"
+    "std/": "https://deno.land/std@0.191.0/"
   },
   "tasks": {
     "dev": "deno run --allow-net --unstable --watch src/main.ts"

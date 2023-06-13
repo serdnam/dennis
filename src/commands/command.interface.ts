@@ -1,7 +1,8 @@
 type ArgumentDoc = {
   name: string;
   type: string;
-  flags: ReadonlyArray<string>;
+  key_spec_index?: number;
+  flags?: ReadonlyArray<string>;
 };
 
 type SubcommandDoc = {
@@ -20,7 +21,7 @@ export type CommandDoc = {
   doc_flags?: string[];
   deprecated_since?: string;
   history?: ReadonlyArray<[string, string]>;
-  subcommands: ReadonlyArray<Readonly<[string, Readonly<SubcommandDoc>]>>;
+  subcommands?: ReadonlyArray<Readonly<[string, Readonly<SubcommandDoc>]>>;
 };
 
 export interface Command {

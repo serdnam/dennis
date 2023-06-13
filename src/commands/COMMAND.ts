@@ -7,7 +7,7 @@ const textDecoder = new TextDecoder();
 const textEncoder = new TextEncoder();
 
 function mapSubcommands(subcommands: CommandDoc["subcommands"]) {
-  return subcommands.flatMap(([name, subc]) => {
+  return subcommands?.flatMap(([name, subc]) => {
     return [textEncoder.encode(name), [
       textEncoder.encode("summary"),
       textEncoder.encode(subc.summary),
@@ -24,8 +24,7 @@ function mapSubcommands(subcommands: CommandDoc["subcommands"]) {
           textEncoder.encode(arg.name),
           textEncoder.encode("type"),
           textEncoder.encode(arg.type),
-          textEncoder.encode("flags"),
-          arg.flags,
+          ...(arg.flags ? [textEncoder.encode("flags"), arg.flags] : []),
         ];
       }),
     ]];
@@ -61,9 +60,13 @@ class COMMANDClass implements Command {
     const subcommand = textDecoder.decode(args[0]);
     switch (subcommand) {
       case "DOCS": {
-        const commandList = decodeUint8ArrayArray(args.slice(1));
+        const commandList = decodeUint8ArrayArray(args.slice(1)).map((c) =>
+          c.toLowerCase()
+        );
+        const filter = commandList.length > 0;
         const commandDocs = [];
         for (const [k, v] of getAllCommands().entries()) {
+          if (filter && !commandList.includes(k)) continue;
           commandDocs.push([k, v] as const);
         }
 
@@ -78,8 +81,12 @@ class COMMANDClass implements Command {
             textEncoder.encode(doc.group),
             textEncoder.encode("complexity"),
             textEncoder.encode(doc.complexity),
-            textEncoder.encode("subcommands"),
-            mapSubcommands(doc.subcommands),
+            ...(doc.subcommands
+              ? [
+                textEncoder.encode("subcommands"),
+                mapSubcommands(doc.subcommands),
+              ]
+              : []),
           ]];
         });
       }

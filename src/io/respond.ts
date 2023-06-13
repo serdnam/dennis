@@ -5,10 +5,20 @@ const SIMPLESTRING = textEncoder.encode("+");
 const BULKSTRING = textEncoder.encode("$");
 const INTEGER = textEncoder.encode(":");
 const NEWLINE = textEncoder.encode("\r\n");
+const NULL = textEncoder.encode("$-1\r\n");
 
 export function respond(resp: any, conn: Deno.Conn) {
   if (Array.isArray(resp)) {
     sendArray(resp, conn);
+  }
+  if (resp === null) {
+    sendNull(conn);
+  }
+  if (typeof resp === "string") {
+    sendString(resp, conn);
+  }
+  if (resp instanceof Uint8Array) {
+    sendBulkString(resp, conn);
   }
 }
 
@@ -47,4 +57,8 @@ function sendInteger(resp: number, conn: Deno.Conn) {
   conn.write(INTEGER);
   conn.write(textEncoder.encode(String(resp)));
   conn.write(NEWLINE);
+}
+
+function sendNull(conn: Deno.Conn) {
+  conn.write(NULL);
 }
