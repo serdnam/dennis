@@ -1,14 +1,14 @@
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "lib": ["deno.window"],
-        "strict": true
-    },
-    "imports": {
-      "std/": "https://deno.land/std@0.191.0/",
-      "lodash": "npm:lodash@^4.17"
-    },
-    "tasks": {
-      "dev": "deno run --allow-net --watch src/main.ts"
-    }
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "imports": {
+    "std/": "https://deno.land/std@0.191.0/",
+    "lodash": "npm:lodash@^4.17"
+  },
+  "tasks": {
+    "dev": "deno run --allow-net --unstable --watch src/main.ts"
   }
+}
