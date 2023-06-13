@@ -7,58 +7,75 @@ const INTEGER = encode(":");
 const NEWLINE = encode("\r\n");
 const NULL = encode("$-1\r\n");
 
-export function respond(resp: any, conn: Deno.Conn) {
+function createWriter(
+  writer: WritableStreamDefaultWriter<Uint8Array>,
+): [Deno.Writer, () => Promise<void>] {
+  return [{
+    write: (chunk: Uint8Array) => {
+      return writer.ready.then(() => writer.write(chunk)).then(() =>
+        chunk.length
+      );
+    },
+  }, async () =>{ await writer.ready; writer.releaseLock()}];
+}
+
+export async function respond(
+  resp: any,
+  writeable: WritableStream<Uint8Array>,
+) {
+  const [writer, done] = createWriter(writeable.getWriter());
   if (Array.isArray(resp)) {
-    sendArray(resp, conn);
+    await sendArray(resp, writer);
   }
   if (resp === null) {
-    sendNull(conn);
+    await sendNull(writer);
   }
   if (typeof resp === "string") {
-    sendString(resp, conn);
+    await sendString(resp, writer);
   }
   if (resp instanceof Uint8Array) {
-    sendBulkString(resp, conn);
+    await sendBulkString(resp, writer);
+  }
+  await done();
+}
+
+async function sendArray(resp: Array<any>, writer: Deno.Writer) {
+  await writer.write(ARRAY);
+  await writer.write(encode(String(resp.length)));
+  await writer.write(NEWLINE);
+  for (const v of resp) {
+    if (Array.isArray(v)) {
+      await sendArray(v, writer);
+    } else if (typeof v === "string") {
+      await sendString(v, writer);
+    } else if (v instanceof Uint8Array) {
+      await sendBulkString(v, writer);
+    } else if (typeof v === "number") {
+      await sendInteger(v, writer);
+    }
   }
 }
 
-function sendArray(resp: Array<any>, conn: Deno.Conn) {
-  conn.write(ARRAY);
-  conn.write(encode(String(resp.length)));
-  conn.write(NEWLINE);
-  resp.forEach((v) => {
-    if (Array.isArray(v)) {
-      sendArray(v, conn);
-    } else if (typeof v === "string") {
-      sendString(v, conn);
-    } else if (v instanceof Uint8Array) {
-      sendBulkString(v, conn);
-    } else if (typeof v === "number") {
-      sendInteger(v, conn);
-    }
-  });
+async function sendString(resp: string, writer: Deno.Writer) {
+  await writer.write(SIMPLESTRING);
+  await writer.write(encode(resp));
+  await writer.write(NEWLINE);
 }
 
-function sendString(resp: string, conn: Deno.Conn) {
-  conn.write(SIMPLESTRING);
-  conn.write(encode(resp));
-  conn.write(NEWLINE);
+async function sendBulkString(resp: Uint8Array, writer: Deno.Writer) {
+  await writer.write(BULKSTRING);
+  await writer.write(encode(String(resp.length)));
+  await writer.write(NEWLINE);
+  await writer.write(resp);
+  await writer.write(NEWLINE);
 }
 
-function sendBulkString(resp: Uint8Array, conn: Deno.Conn) {
-  conn.write(BULKSTRING);
-  conn.write(encode(String(resp.length)));
-  conn.write(NEWLINE);
-  conn.write(resp);
-  conn.write(NEWLINE);
+async function sendInteger(resp: number, writer: Deno.Writer) {
+  await writer.write(INTEGER);
+  await writer.write(encode(String(resp)));
+  await writer.write(NEWLINE);
 }
 
-function sendInteger(resp: number, conn: Deno.Conn) {
-  conn.write(INTEGER);
-  conn.write(encode(String(resp)));
-  conn.write(NEWLINE);
-}
-
-function sendNull(conn: Deno.Conn) {
-  conn.write(NULL);
+async function sendNull(writer: Deno.Writer) {
+  await writer.write(NULL);
 }

@@ -13,7 +13,11 @@ function concatUint8Arrays(array1: Uint8Array, array2: Uint8Array) {
   return result;
 }
 
-export async function handle(conn: Deno.Conn, db: any) {
+export async function handle(
+  readable: ReadableStream<Uint8Array>,
+  writeable: WritableStream<Uint8Array>,
+  db: any,
+) {
   let status = "waiting";
   let buffer: Uint8Array = new Uint8Array(0);
 
@@ -54,7 +58,7 @@ export async function handle(conn: Deno.Conn, db: any) {
   }
 
   for await (
-    const chunk of conn.readable
+    const chunk of readable
   ) {
     buffer = concatUint8Arrays(buffer, chunk);
 
@@ -144,7 +148,7 @@ export async function handle(conn: Deno.Conn, db: any) {
         case "reply": {
           // Execute the command
           const result = await runCommand(parts, db);
-          respond(result, conn);
+          await respond(result, writeable);
           // Reset for the next command
           status = "waiting";
           parts = [];
