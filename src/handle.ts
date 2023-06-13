@@ -1,5 +1,6 @@
 import { runCommand } from "./commands/runCommand.ts";
 import { respond } from "./io/respond.ts";
+import { decode } from "./utils/decode.ts";
 
 const CARRIAGE_RETURN = 13; // '\r'
 const ARRAY_INDICATOR = 42; // '*'

@@ -64,7 +64,7 @@ class COMMANDClass implements Command {
   } as const;
 
   // deno-lint-ignore require-await
-  async execute(args: Uint8Array[], db: any) {
+  async execute(args: Uint8Array[], _db: Deno.Kv) {
     const subcommand = decode(args[0]);
     switch (subcommand) {
       case "DOCS": {

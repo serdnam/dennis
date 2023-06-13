@@ -17,7 +17,7 @@ class SETCommand implements Command {
     }],
   } as const;
 
-  async execute(args: Uint8Array[], db: any) {
+  async execute(args: Uint8Array[], db: Deno.Kv) {
     const key = args[0];
     const value = args[1];
     await db.set([key], value);

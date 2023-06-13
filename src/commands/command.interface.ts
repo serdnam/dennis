@@ -27,5 +27,5 @@ export type CommandDoc = {
 
 export interface Command {
   docs: Readonly<CommandDoc>;
-  execute: (command: Uint8Array[], db: any) => Promise<any>;
+  execute: (command: Uint8Array[], db: Deno.Kv) => Promise<any>;
 }
