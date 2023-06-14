@@ -39,6 +39,8 @@ function mapSubcommands(subcommands: CommandDoc["subcommands"]) {
   });
 }
 class COMMANDClass implements Command {
+  name = "command";
+
   docs = {
     summary: "Get array of Redis command details",
     since: "2.8.13",

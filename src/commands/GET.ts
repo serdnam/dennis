@@ -1,6 +1,9 @@
+import { validateArgsAmount } from "../utils/validateArgsAmount.ts";
 import { Command } from "./command.interface.ts";
 
 class GETCommand implements Command {
+  name = "get";
+
   docs = {
     summary: "Get the value of a key",
     since: "1.0.0",
@@ -13,7 +16,11 @@ class GETCommand implements Command {
     }],
   } as const;
 
-  async execute(args: Uint8Array[], db: any) {
+  async execute(args: Uint8Array[], db: Deno.Kv) {
+    const validate = validateArgsAmount(1, this.name, args);
+    if (validate.error) {
+      return validate.error;
+    }
     const key = args[0];
     return (await db.get([key])).value || null;
   }

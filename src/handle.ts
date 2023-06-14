@@ -17,7 +17,7 @@ function concatUint8Arrays(array1: Uint8Array, array2: Uint8Array) {
 export async function handle(
   readable: ReadableStream<Uint8Array>,
   writeable: WritableStream<Uint8Array>,
-  db: any,
+  db: Deno.Kv,
 ) {
   let status = "waiting";
   let buffer: Uint8Array = new Uint8Array(0);
@@ -33,7 +33,7 @@ export async function handle(
   function parseArrayLength(chunk: Uint8Array) {
     let i = 0;
     while (chunk[i] !== CARRIAGE_RETURN && chunk[i] !== undefined) {
-      arrayLength += (arrayLength * 10) + (chunk[i] - ZERO);
+      arrayLength = (arrayLength * 10) + (chunk[i] - ZERO);
       i++;
     }
     if (chunk[i] === CARRIAGE_RETURN) {
@@ -47,7 +47,7 @@ export async function handle(
   function parseBulkStringLength(chunk: Uint8Array) {
     let i = 0;
     while (chunk[i] !== CARRIAGE_RETURN && chunk[i] !== undefined) {
-      bulkStringLength += (bulkStringLength * 10) + (chunk[i] - ZERO);
+      bulkStringLength = (bulkStringLength * 10) + (chunk[i] - ZERO);
       i++;
     }
     if (chunk[i] === CARRIAGE_RETURN) {
@@ -93,7 +93,7 @@ export async function handle(
           }
           if (buffer[0] === BULK_STRING_INDICATOR) {
             status = "parsing_bulkstringlength";
-            buffer = buffer.slice(1);
+            buffer = buffer.slice(1)
             const finished = parseBulkStringLength(buffer);
             if (finished) {
               parts.push(new Uint8Array(bulkStringLength));

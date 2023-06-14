@@ -1,9 +1,12 @@
+import { CommandError } from "../commands/command.interface.ts";
 import { encode } from "../utils/encode.ts";
+import { isError } from "../utils/typeutils.ts";
 
 const ARRAY = encode("*");
 const SIMPLESTRING = encode("+");
 const BULKSTRING = encode("$");
 const INTEGER = encode(":");
+const ERROR = encode("-");
 const NEWLINE = encode("\r\n");
 const NULL = encode("$-1\r\n");
 
@@ -16,14 +19,20 @@ function createWriter(
         chunk.length
       );
     },
-  }, async () =>{ await writer.ready; writer.releaseLock()}];
+  }, async () => {
+    await writer.ready;
+    writer.releaseLock();
+  }];
 }
 
 export async function respond(
-  resp: any,
+  resp: unknown,
   writeable: WritableStream<Uint8Array>,
 ) {
   const [writer, done] = createWriter(writeable.getWriter());
+  if (isError(resp)) {
+    await sendError(resp, writer);
+  }
   if (Array.isArray(resp)) {
     await sendArray(resp, writer);
   }
@@ -35,6 +44,9 @@ export async function respond(
   }
   if (resp instanceof Uint8Array) {
     await sendBulkString(resp, writer);
+  }
+  if (typeof resp === "number") {
+    await sendInteger(resp, writer);
   }
   await done();
 }
@@ -78,4 +90,9 @@ async function sendInteger(resp: number, writer: Deno.Writer) {
 
 async function sendNull(writer: Deno.Writer) {
   await writer.write(NULL);
+}
+
+async function sendError(error: CommandError, writer: Deno.Writer) {
+  await writer.write(ERROR), await writer.write(encode(error.message));
+  await writer.write(NEWLINE);
 }
