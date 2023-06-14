@@ -25,7 +25,7 @@ export type CommandDoc = {
   arguments?: ReadonlyArray<Readonly<ArgumentDoc>>;
 };
 
-// type Response = Uint8Array | number | string | number | null | Array<Response>
+type Response = Uint8Array | number | string | number | null | Array<Response>
 
 export type CommandError = {
   type: "error" | "argsamounterror";
@@ -35,5 +35,5 @@ export type CommandError = {
 export interface Command {
   docs: Readonly<CommandDoc>;
   name: string;
-  execute: (command: Uint8Array[], db: Deno.Kv) => Promise<any | CommandError>;
+  execute: (command: Uint8Array[], db: Deno.Kv) => Promise<(Response | Array<Response>) | CommandError>;
 }

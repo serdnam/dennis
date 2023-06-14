@@ -12,7 +12,7 @@ let done: () => void;
 describe("DECRBY command", () => {
   beforeEach(async () => {
     kv = await Deno.openKv(db);
-    const [portNumber, doneFn] = await testServer(kv);
+    const [portNumber, doneFn] = testServer(kv);
     done = doneFn;
     port = portNumber;
     redis = await connect({ hostname: "127.0.0.1", port, maxRetryCount: 0 });
@@ -31,7 +31,7 @@ describe("DECRBY command", () => {
   it("Should properly DECRBY strings", async (t) => {
     const KEY = t.name
     const setResp = await redis.set(KEY, 10);
-    const decrResp = await redis.incrby(KEY, 9)
+    const decrResp = await redis.decrby(KEY, 9)
     assertEquals(setResp, "OK");
     assertEquals(decrResp, 1)
   });

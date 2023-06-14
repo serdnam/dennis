@@ -1,9 +1,9 @@
 /// <reference lib="deno.unstable" />
 import { handle } from "../../src/handle.ts";
-import { getAvailablePort } from "x/port/mod.ts";
+import { getAvailablePortSync } from "x/port/mod.ts";
 
-export async function testServer(kv: Deno.Kv): Promise<[number, () => void]> {
-  const port = await getAvailablePort();
+export function testServer(kv: Deno.Kv): [number, () => void] {
+  const port = getAvailablePortSync();
   if (!port) {
     throw new Error("No available port");
   }

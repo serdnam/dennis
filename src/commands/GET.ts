@@ -22,7 +22,10 @@ class GETCommand implements Command {
       return validate.error;
     }
     const key = args[0];
-    return (await db.get([key])).value || null;
+    const result = (await db.get([key])).value 
+    if (result === undefined) return null
+
+    return result as Uint8Array;
   }
 }
 

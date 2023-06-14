@@ -1,11 +1,10 @@
+// deno-lint-ignore-file ban-unused-ignore
 import { decode } from "../utils/decode.ts";
 import { decodeUint8ArrayArray } from "../utils/decodeUint8ArrayArray.ts";
 import { encode } from "../utils/encode.ts";
 import { getAllCommands } from "../utils/getAllCommands.ts";
 
 import { ArgumentDoc, Command, CommandDoc } from "./command.interface.ts";
-
-const textDecoder = new TextDecoder();
 
 function mapArguments(args: ReadonlyArray<Readonly<ArgumentDoc>>) {
   return args.map((arg) => {
@@ -22,8 +21,8 @@ function mapArguments(args: ReadonlyArray<Readonly<ArgumentDoc>>) {
   });
 }
 
-function mapSubcommands(subcommands: CommandDoc["subcommands"]) {
-  return subcommands?.flatMap(([name, subc]) => {
+function mapSubcommands(subcommands: NonNullable<CommandDoc["subcommands"]>) {
+  return subcommands.flatMap(([name, subc]) => {
     return [encode(name), [
       encode("summary"),
       encode(subc.summary),
@@ -66,7 +65,7 @@ class COMMANDClass implements Command {
   } as const;
 
   // deno-lint-ignore require-await
-  async execute(args: Uint8Array[], _db: Deno.Kv) {
+  async execute(args: Uint8Array[], _db: Deno.Kv): Promise<any> {
     const subcommand = decode(args[0]);
     switch (subcommand) {
       case "DOCS": {
@@ -105,6 +104,11 @@ class COMMANDClass implements Command {
               : []),
           ]];
         });
+      } default: {
+        return {
+          type: 'error',
+          message: `ERR unknown subcommand '${subcommand}'. Try COMMAND HELP.`
+        }
       }
     }
   }
