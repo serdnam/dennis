@@ -24,16 +24,25 @@ class DECRCommand implements Command {
       return validate.error;
     }
     const key = args[0];
-    const res = await db.get([key]);
-    const value = res.value;
-    const result = getInteger(value);
-    if (result.result !== undefined) {
-      const decr = result.result - 1;
-      await db.set([key], encode(`${decr}`));
-      return decr;
-    } else {
-      return result.error;
+    while (true) {
+      const keyRes = await db.get([key]);
+      const value = keyRes.value;
+      const result = getInteger(value);
+      if (result.result !== undefined) {
+        const decr = result.result - 1;
+        const res = await db.atomic()
+          .check(keyRes)
+          .set([key], encode(`${decr}`))
+          .commit()
+        if (!res.ok) {
+          continue
+        }
+        return decr;
+      } else {
+        return result.error;
+      }
     }
+    
   }
 }
 

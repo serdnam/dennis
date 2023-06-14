@@ -33,16 +33,25 @@ class INCRBYCommand implements Command {
       return summandValidate.error;
     }
     const summand = summandValidate.result;
-    const res = await db.get([key]);
-    const value = res.value;
-    const valueResult = getInteger(value);
-    if (valueResult.result !== undefined) {
-      const incr = valueResult.result + summand;
-      await db.set([key], encode(`${incr}`));
-      return incr;
-    } else {
-      return valueResult.error;
+    while (true) {
+      const keyRes = await db.get([key]);
+      const value = keyRes.value;
+      const valueResult = getInteger(value);
+      if (valueResult.result !== undefined) {
+        const incr = valueResult.result + summand;
+        const res = await db.atomic()
+          .check(keyRes)
+          .set([key], encode(`${incr}`))
+          .commit()
+        if (!res.ok) {
+          continue
+        }
+        return incr;
+      } else {
+        return valueResult.error;
+      }
     }
+    
   }
 }
 

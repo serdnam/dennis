@@ -24,16 +24,25 @@ class INCRCommand implements Command {
       return validate.error;
     }
     const key = args[0];
-    const res = await db.get([key]);
-    const value = res.value;
-    const result = getInteger(value);
-    if (result.result !== undefined) {
-      const incr = result.result + 1;
-      await db.set([key], encode(`${incr}`));
-      return incr;
-    } else {
-      return result.error;
+    while (true) {
+      const keyRes = await db.get([key]);
+      const value = keyRes.value;
+      const result = getInteger(value);
+      if (result.result !== undefined) {
+        const incr = result.result + 1;
+        const res = await db.atomic()
+          .check(keyRes)
+          .set([key], encode(`${incr}`))
+          .commit()
+        if (!res.ok) {
+          continue
+        }
+        return incr;
+      } else {
+        return result.error;
+      }
     }
+    
   }
 }
 

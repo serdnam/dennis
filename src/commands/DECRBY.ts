@@ -33,16 +33,25 @@ class DECRBYCommand implements Command {
       return subtrahendValidate.error;
     }
     const subtrahend = subtrahendValidate.result;
-    const res = await db.get([key]);
-    const value = res.value;
-    const valueResult = getInteger(value);
-    if (valueResult.result !== undefined) {
-      const incr = valueResult.result - subtrahend;
-      await db.set([key], encode(`${incr}`));
-      return incr;
-    } else {
-      return valueResult.error;
+    while (true) {
+      const keyRes = await db.get([key]);
+      const value = keyRes.value;
+      const valueResult = getInteger(value);
+      if (valueResult.result !== undefined) {
+        const decr = valueResult.result - subtrahend;
+        const res = await db.atomic()
+          .check(keyRes)
+          .set([key], encode(`${decr}`))
+          .commit()
+        if (!res.ok) {
+          continue
+        }
+        return decr;
+      } else {
+        return valueResult.error;
+      }
     }
+    
   }
 }
 
