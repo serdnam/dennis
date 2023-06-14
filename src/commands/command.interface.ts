@@ -35,5 +35,5 @@ export type CommandError = {
 export interface Command {
   docs: Readonly<CommandDoc>;
   name: string;
-  execute: (command: Uint8Array[], db: Deno.Kv) => Promise<(Response | Array<Response>) | CommandError>;
+  execute: (command: Uint8Array[], db: Deno.Kv) => Promise<Response | Array<Response> | CommandError>;
 }

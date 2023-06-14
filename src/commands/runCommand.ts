@@ -1,4 +1,5 @@
 import { decode } from "../utils/decode.ts";
+import { decodeUint8ArrayArray } from "../utils/decodeUint8ArrayArray.ts";
 import { commands } from "./allCommands.ts";
 
 export async function runCommand(args: Uint8Array[], db: Deno.Kv) {
@@ -6,7 +7,10 @@ export async function runCommand(args: Uint8Array[], db: Deno.Kv) {
   console.log(commandName)
   const command = commands.get(commandName);
   if (!command) {
-    throw new Error(`Unknown command: ${commandName}`);
+    return {
+      type: 'error',
+      message: `ERR unknown command '${commandName}', with args beginning with: ${decodeUint8ArrayArray(args.slice(1)).map(arg => `'${arg}'`).join(' ')}`
+    }
   }
   const result = await command.execute(args.slice(1), db);
   return result;
