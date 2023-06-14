@@ -3,11 +3,11 @@ import { getInteger } from "../utils/typeutils.ts";
 import { validateArgsAmount } from "../utils/validateArgsAmount.ts";
 import { Command } from "./command.interface.ts";
 
-class INCRBYCommand implements Command {
-  name = "incrby";
+class DECRBYCommand implements Command {
+  name = "decrby";
 
   docs = {
-    summary: "Increment the integer value of a key by the given amount",
+    summary: "Decrement the integer value of a key by the given number",
     since: "1.0.0",
     group: "string",
     complexity: "O(1)",
@@ -16,7 +16,7 @@ class INCRBYCommand implements Command {
       type: "key",
       key_spec_index: 0,
     }, {
-      name: "increment",
+      name: "decrement",
       type: "integer"
     }],
   } as const;
@@ -27,17 +27,17 @@ class INCRBYCommand implements Command {
       return validate.error;
     }
     const key = args[0];
-    const summandInput = args[1];
-    const summandValidate = getInteger(summandInput);
-    if (summandValidate.error) {
-      return summandValidate.error;
+    const subtrahendInput = args[1];
+    const subtrahendValidate = getInteger(subtrahendInput);
+    if (subtrahendValidate.error) {
+      return subtrahendValidate.error;
     }
-    const summand = summandValidate.result;
+    const subtrahend = subtrahendValidate.result;
     const res = await db.get([key]);
     const value = res.value;
     const valueResult = getInteger(value);
     if (valueResult.result !== undefined) {
-      const incr = valueResult.result + summand;
+      const incr = valueResult.result - subtrahend;
       await db.set([key], encode(`${incr}`));
       return incr;
     } else {
@@ -46,6 +46,6 @@ class INCRBYCommand implements Command {
   }
 }
 
-const INCRBY = new INCRBYCommand();
+const DECRBY = new DECRBYCommand();
 
-export { INCRBY };
+export { DECRBY };

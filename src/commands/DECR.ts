@@ -3,11 +3,11 @@ import { getInteger } from "../utils/typeutils.ts";
 import { validateArgsAmount } from "../utils/validateArgsAmount.ts";
 import { Command } from "./command.interface.ts";
 
-class INCRCommand implements Command {
-  name = "incr";
+class DECRCommand implements Command {
+  name = "decr";
 
   docs = {
-    summary: "Increment the integer value of a key by one",
+    summary: "Decrement the integer value of a key by one",
     since: "1.0.0",
     group: "string",
     complexity: "O(1)",
@@ -28,15 +28,15 @@ class INCRCommand implements Command {
     const value = res.value;
     const result = getInteger(value);
     if (result.result !== undefined) {
-      const incr = result.result + 1;
-      await db.set([key], encode(`${incr}`));
-      return incr;
+      const decr = result.result - 1;
+      await db.set([key], encode(`${decr}`));
+      return decr;
     } else {
       return result.error;
     }
   }
 }
 
-const INCR = new INCRCommand();
+const DECR = new DECRCommand();
 
-export { INCR };
+export { DECR };
