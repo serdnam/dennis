@@ -16,3 +16,18 @@ export function validateArgsAmount(
   }
   return { result: "OK" };
 }
+
+export function validateEvenArgs(
+    commandName: string,
+    arr: unknown[],
+  ): Either<CommandError, "OK"> {
+    if (arr.length % 2 !== 0) {
+      return {
+        error: {
+          type: "error",
+          message: `ERR wrong number of arguments for ${commandName} command`,
+        },
+      };
+    }
+    return { result: "OK" };
+  }

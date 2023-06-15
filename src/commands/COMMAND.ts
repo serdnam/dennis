@@ -6,7 +6,7 @@ import { getAllCommands } from "../utils/getAllCommands.ts";
 
 import { ArgumentDoc, Command, CommandDoc } from "./command.interface.ts";
 
-function mapArguments(args: ReadonlyArray<Readonly<ArgumentDoc>>) {
+function mapArguments(args: ReadonlyArray<Readonly<ArgumentDoc>>): any {
   return args.map((arg) => {
     return [
       encode("name"),
@@ -17,6 +17,12 @@ function mapArguments(args: ReadonlyArray<Readonly<ArgumentDoc>>) {
         ? [encode("key_spec_index"), arg.key_spec_index]
         : []),
       ...(arg.flags ? [encode("flags"), arg.flags] : []),
+      ...(arg.arguments
+        ? [
+          encode("arguments"),
+          mapArguments(arg.arguments),
+        ]
+        : []),
     ];
   });
 }

@@ -3,6 +3,7 @@ export type ArgumentDoc = {
   type: string;
   key_spec_index?: number;
   flags?: ReadonlyArray<string>;
+  arguments?: ReadonlyArray<Readonly<ArgumentDoc>>
 };
 
 type SubcommandDoc = {

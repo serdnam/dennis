@@ -64,6 +64,8 @@ async function sendArray(resp: Array<any>, writer: Deno.Writer) {
       await sendBulkString(v, writer);
     } else if (typeof v === "number") {
       await sendInteger(v, writer);
+    } else if (v === null) {
+      await sendNull(writer)
     }
   }
 }

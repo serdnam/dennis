@@ -1,18 +1,21 @@
 import { validateArgsAmount } from "../utils/validateArgsAmount.ts";
 import { Command } from "./command.interface.ts";
 
-class GETCommand implements Command {
-  name = "get";
+class MGETCommand implements Command {
+  name = "mget";
 
   docs = {
-    summary: "Get the value of a key",
+    summary: "Get the values of all the given keys",
     since: "1.0.0",
     group: "string",
-    complexity: "O(1)",
+    complexity: "O(N) where N is the number of keys to retrieve.",
     arguments: [{
       name: "key",
       type: "key",
       key_spec_index: 0,
+      flags: [
+        "multiple"
+      ]
     }],
   } as const;
 
@@ -21,12 +24,15 @@ class GETCommand implements Command {
     if (validate.error) {
       return validate.error;
     }
-    const key = args[0];
-    const result = (await db.get([key])).value 
-    return result as Uint8Array || null;
+    const res: (Uint8Array | null)[] = []
+    for (const arg of args) {
+        const value = (await db.get([arg])).value
+        res.push(value as Uint8Array | null)
+    }
+    return res;
   }
 }
 
-const GET = new GETCommand();
+const MGET = new MGETCommand();
 
-export { GET };
+export { MGET };
