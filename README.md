@@ -1,6 +1,8 @@
 # Dennis
 
-A server that processes basic Redis Serialization Protocol (RESP) commands, storing received data in Deno KV.
+A server that processes basic [Redis Serialization Protocol (RESP)](https://redis.io/docs/reference/protocol-spec/) commands, storing received data in Deno KV.
+
+<img width="438" alt="image" src="https://github.com/serdnam/dennis/assets/38575851/fe341f51-d164-45dc-ab42-7c46ede17148">
 
 ## Supported commands
 
